@@ -1,7 +1,18 @@
-import { boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { createId as cuid } from "@paralleldrive/cuid2";
+import {
+  boolean,
+  foreignKey,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  varchar,
+} from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
-  id: text("id").primaryKey(),
+  id: varchar("id", { length: 255 })
+    .$defaultFn(() => cuid())
+    .primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
@@ -11,25 +22,34 @@ export const user = pgTable("user", {
     .defaultNow()
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
+  profile: text("profile"),
 });
 
-export const session = pgTable("session", {
-  id: text("id").primaryKey(),
-  expiresAt: timestamp("expires_at").notNull(),
-  token: text("token").notNull().unique(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .$onUpdate(() => /* @__PURE__ */ new Date())
-    .notNull(),
-  ipAddress: text("ip_address"),
-  userAgent: text("user_agent"),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-});
+export const session = pgTable(
+  "session",
+  {
+    id: varchar("id", { length: 255 })
+      .$defaultFn(() => cuid())
+      .primaryKey(),
+    expiresAt: timestamp("expires_at").notNull(),
+    token: text("token").notNull().unique(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .notNull(),
+    ipAddress: text("ip_address"),
+    userAgent: text("user_agent"),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+  },
+  (table) => [uniqueIndex("session_token_idx").on(table.token)]
+);
 
 export const account = pgTable("account", {
-  id: text("id").primaryKey(),
+  id: varchar("id", { length: 255 })
+    .$defaultFn(() => cuid())
+    .primaryKey(),
   accountId: text("account_id").notNull(),
   providerId: text("provider_id").notNull(),
   userId: text("user_id")
@@ -49,7 +69,9 @@ export const account = pgTable("account", {
 });
 
 export const verification = pgTable("verification", {
-  id: text("id").primaryKey(),
+  id: varchar("id", { length: 255 })
+    .$defaultFn(() => cuid())
+    .primaryKey(),
   identifier: text("identifier").notNull(),
   value: text("value").notNull(),
   expiresAt: timestamp("expires_at").notNull(),
@@ -59,3 +81,55 @@ export const verification = pgTable("verification", {
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
 });
+
+export const tags = pgTable("tags", {
+  id: varchar("id", { length: 255 })
+    .$defaultFn(() => cuid())
+    .primaryKey(),
+  name: varchar("name", { length: 255 }).unique().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const articles = pgTable("articles", {
+  id: varchar("id", { length: 255 })
+    .$defaultFn(() => cuid())
+    .primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  title: varchar("title", { length: 255 }).notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  published: boolean("published").default(false).notNull(),
+  publishedAt: timestamp("published_at"),
+});
+
+export const comments = pgTable(
+  "comments",
+  {
+    id: varchar("id", { length: 255 })
+      .$defaultFn(() => cuid())
+      .primaryKey(),
+    parentId: varchar("parent_id", { length: 255 }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    articleId: text("article_id")
+      .notNull()
+      .references(() => articles.id, { onDelete: "cascade" }),
+    content: text("content").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => {
+    return [
+      foreignKey({
+        columns: [table.parentId],
+        foreignColumns: [table.id],
+        name: "comments_parent_id_fkey",
+      }).onDelete("cascade"),
+    ];
+  }
+);
