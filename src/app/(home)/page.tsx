@@ -1,5 +1,11 @@
 import { HomeView } from "@/modules/home/ui/views/home-view";
+import { HydrateClient, trpc } from "@/trpc/server";
 
 export default function Home() {
-  return <HomeView />;
+  void trpc.home.getMany.prefetch();
+  return (
+    <HydrateClient>
+      <HomeView />
+    </HydrateClient>
+  );
 }

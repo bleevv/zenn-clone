@@ -105,8 +105,8 @@ export const articles = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    title: varchar("title", { length: 255 }).notNull(),
-    content: text("content").notNull(),
+    title: varchar("title", { length: 255 }),
+    content: text("content"),
     likeCount: integer("like_count").default(0).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),

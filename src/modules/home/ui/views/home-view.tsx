@@ -1,3 +1,12 @@
+"use client";
+
+import { CommonHeader } from "@/components/shared/common-header";
+
 export const HomeView = () => {
-  return <div>HomeView</div>;
+  return (
+    <>
+      <CommonHeader />
+      <div />
+    </>
+  );
 };

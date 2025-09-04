@@ -13,5 +13,5 @@ export default async function HomeLayout({
   if (!session?.user) {
     redirect("/sign-in");
   }
-  return <div>{children}</div>;
+  return children;
 }
