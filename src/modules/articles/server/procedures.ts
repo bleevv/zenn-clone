@@ -1,13 +1,25 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
-import { articles } from "@/db/schema";
+import { articles, user } from "@/db/schema";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 
 export const articlesRouter = createTRPCRouter({
   getMany: protectedProcedure.query(async () => {
-    const data = await db.select().from(articles);
+    const data = await db
+      .select({
+        id: articles.id,
+        title: articles.title,
+        published: articles.published,
+        likeCount: articles.likeCount,
+        publishedAt: articles.publishedAt,
+        user,
+      })
+      .from(articles)
+      .innerJoin(user, eq(articles.userId, user.id))
+      .where(eq(articles.published, true))
+      .orderBy(desc(articles.createdAt));
     return data;
   }),
   getOne: protectedProcedure
@@ -66,9 +78,10 @@ export const articlesRouter = createTRPCRouter({
           code: "NOT_FOUND",
         });
       }
+      const publishedAt = input.published ? new Date() : undefined;
       const [updatedArticle] = await db
         .update(articles)
-        .set(input)
+        .set({ ...input, publishedAt })
         .where(eq(articles.id, input.id))
         .returning();
       if (!updatedArticle) {

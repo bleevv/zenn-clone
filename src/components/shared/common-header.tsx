@@ -8,21 +8,23 @@ import { NotificationButton } from "./notification-button";
 
 export const CommonHeader = () => {
   return (
-    <header className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-10">
-      <Link className="flex items-center justify-center gap-2" href="/">
-        <Book />
-        <span className="font-black text-2xl tracking-wider">ZZZ</span>
-      </Link>
-      <div className="flex items-center gap-2">
-        <ThemeToggle />
-        <Button asChild variant="ghost">
-          <Link href="/search">
-            <SearchIcon className="size-6" />
-          </Link>
-        </Button>
-        <NotificationButton />
-        <UserButton />
-        <NewPostButton />
+    <header className="bg-white">
+      <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-10">
+        <Link className="flex items-center justify-center gap-2" href="/">
+          <Book />
+          <span className="font-black text-2xl tracking-wider">ZZZ</span>
+        </Link>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <Button asChild variant="ghost">
+            <Link href="/search">
+              <SearchIcon className="size-6" />
+            </Link>
+          </Button>
+          <NotificationButton />
+          <UserButton />
+          <NewPostButton />
+        </div>
       </div>
     </header>
   );
