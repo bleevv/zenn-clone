@@ -68,6 +68,9 @@ importers:
       drizzle-orm:
         specifier: ^0.44.5
         version: 0.44.5(kysely@0.28.5)(postgres@3.4.7)
+      jotai:
+        specifier: ^2.13.1
+        version: 2.13.1(@types/react@19.1.12)(react@19.1.0)
       lucide-react:
         specifier: ^0.542.0
         version: 0.542.0(react@19.1.0)
@@ -1784,6 +1787,24 @@ packages:
 
   jose@5.10.0:
     resolution: {integrity: sha512-s+3Al/p9g32Iq+oqXxkW//7jk2Vig6FF1CFqzVXoTUXt2qz89YWbL+OwS17NFYEvxC35n0FKeGO2LGYSxeM2Gg==}
+
+  jotai@2.13.1:
+    resolution: {integrity: sha512-cRsw6kFeGC9Z/D3egVKrTXRweycZ4z/k7i2MrfCzPYsL9SIWcPXTyqv258/+Ay8VUEcihNiE/coBLE6Kic6b8A==}
+    engines: {node: '>=12.20.0'}
+    peerDependencies:
+      '@babel/core': '>=7.0.0'
+      '@babel/template': '>=7.0.0'
+      '@types/react': '>=17.0.0'
+      react: '>=17.0.0'
+    peerDependenciesMeta:
+      '@babel/core':
+        optional: true
+      '@babel/template':
+        optional: true
+      '@types/react':
+        optional: true
+      react:
+        optional: true
 
   js-tokens@9.0.1:
     resolution: {integrity: sha512-mxa9E9ITFOt0ban3j6L5MpjwegGz6lBQmM1IJkWeBZGcMxto50+eWdjC/52xDbS2vy0k7vIMK0Fe2wfL9OQSpQ==}
@@ -3660,6 +3681,11 @@ snapshots:
   jiti@2.5.1: {}
 
   jose@5.10.0: {}
+
+  jotai@2.13.1(@types/react@19.1.12)(react@19.1.0):
+    optionalDependencies:
+      '@types/react': 19.1.12
+      react: 19.1.0
 
   js-tokens@9.0.1: {}
 

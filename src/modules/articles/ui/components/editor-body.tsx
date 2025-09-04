@@ -1,11 +1,20 @@
 "use client";
 
 import { PenIcon, PlayIcon } from "lucide-react";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { useAtom, useSetAtom } from "jotai";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { trpc } from "@/trpc/client";
+import { 
+  titleAtom, 
+  contentAtom, 
+  previewModeAtom, 
+  updateTitleAtom, 
+  updateContentAtom,
+  initializeArticleAtom 
+} from "@/modules/articles/lib/state";
 import Markdown from "./markdown";
 
 export const EditorBody = ({ articleId }: { articleId: string }) => {
@@ -20,14 +29,32 @@ export const EditorBody = ({ articleId }: { articleId: string }) => {
 
 const EditorBodySuspense = ({ articleId }: { articleId: string }) => {
   const [article] = trpc.articles.getOne.useSuspenseQuery({ id: articleId });
-  const [title, setTitle] = useState<string>(article.title ?? "");
-  const [content, setContent] = useState<string>(article.content ?? "");
-  const [previewMode, setPreviewMode] = useState<boolean>(false);
+  
+  // Jotai atoms
+  const [title] = useAtom(titleAtom);
+  const [content] = useAtom(contentAtom);
+  const [previewMode, setPreviewMode] = useAtom(previewModeAtom);
+  
+  // Action atoms
+  const updateTitle = useSetAtom(updateTitleAtom);
+  const updateContent = useSetAtom(updateContentAtom);
+  const initializeArticle = useSetAtom(initializeArticleAtom);
+
+  // Initialize article data on mount
+  useEffect(() => {
+    initializeArticle({
+      id: articleId,
+      title: article.title ?? undefined,
+      content: article.content ?? undefined,
+      published: article.published ?? undefined
+    });
+  }, [article, articleId, initializeArticle]);
+
   return (
     <div className="mx-auto max-w-[960px] p-10">
       <Textarea
         className="w-full resize-none overflow-hidden border-none p-0 font-bold text-3xl shadow-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-        onChange={(e) => setTitle(e.target.value)}
+        onChange={(e) => updateTitle(e.target.value)}
         placeholder="Title"
         rows={2}
         value={title}
@@ -41,7 +68,7 @@ const EditorBodySuspense = ({ articleId }: { articleId: string }) => {
           ) : (
             <Textarea
               className="min-h-[500px] w-full resize-none break-words border-none text-base tracking-wider shadow-none ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-              onChange={(e) => setContent(e.target.value)}
+              onChange={(e) => updateContent(e.target.value)}
               placeholder="Write in markdown"
               value={content}
             />

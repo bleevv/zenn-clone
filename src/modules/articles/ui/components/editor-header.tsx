@@ -1,13 +1,54 @@
 "use client";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { ArrowLeftIcon, MessageCircleIcon, Settings2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import {
+  articleIdAtom,
+  contentAtom,
+  hasUnsavedChangesAtom,
+  markAsSavedAtom,
+  publicModeAtom,
+  titleAtom,
+  togglePublicModeAtom,
+} from "@/modules/articles/lib/state";
+import { trpc } from "@/trpc/client";
 
 export const EditorHeader = () => {
   const router = useRouter();
-  const [publicMode, setPublicMode] = useState(false);
+  const utils = trpc.useUtils();
+  const articleId = useAtomValue(articleIdAtom);
+  const title = useAtomValue(titleAtom);
+  const content = useAtomValue(contentAtom);
+  const [publicMode, setPublicMode] = useAtom(publicModeAtom);
+  const hasUnsavedChanges = useAtomValue(hasUnsavedChangesAtom);
+
+  const togglePublicMode = useSetAtom(togglePublicModeAtom);
+  const markAsSaved = useSetAtom(markAsSavedAtom);
+
+  const { mutate, isPending } = trpc.articles.update.useMutation({
+    onSuccess: () => {
+      markAsSaved();
+      utils.articles.getOne.invalidate({ id: articleId });
+      utils.articles.getMany.invalidate();
+    },
+  });
+
+  const handleSave = () => {
+    mutate({
+      id: articleId,
+      title,
+      content,
+      published: publicMode,
+    });
+  };
+
+  const handlePublicModeChange = (isPublic: boolean) => {
+    setPublicMode(isPublic);
+    togglePublicMode(isPublic);
+  };
+
   return (
     <header className="sticky top-0 z-100 mx-auto flex h-16 max-w-[1600px] items-center justify-between border-b bg-[#edf2f7] px-10">
       <Button onClick={() => router.back()} variant="ghost">
@@ -20,9 +61,12 @@ export const EditorHeader = () => {
         <Button variant="ghost">
           <MessageCircleIcon className="size-4" />
         </Button>
-        <Switch checked={publicMode} onCheckedChange={setPublicMode} />
+        <Switch checked={publicMode} onCheckedChange={handlePublicModeChange} />
         <span className="text-sm">公開する</span>
-        <Button>{publicMode ? "公開する" : "下書き保存"}</Button>
+        <Button disabled={isPending || !hasUnsavedChanges} onClick={handleSave}>
+          {/** biome-ignore lint/style/noNestedTernary: <intention> */}
+          {isPending ? "保存中..." : publicMode ? "公開する" : "下書き保存"}
+        </Button>
       </div>
     </header>
   );

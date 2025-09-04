@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import { articles } from "@/db/schema";
@@ -44,4 +44,39 @@ export const articlesRouter = createTRPCRouter({
     }
     return article;
   }),
+  update: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        title: z.string(),
+        content: z.string(),
+        published: z.boolean(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const [existingArticle] = await db
+        .select()
+        .from(articles)
+        .where(
+          and(eq(articles.id, input.id), eq(articles.userId, ctx.user.id))
+        );
+      if (!existingArticle) {
+        throw new TRPCError({
+          message: "記事が見つかりません",
+          code: "NOT_FOUND",
+        });
+      }
+      const [updatedArticle] = await db
+        .update(articles)
+        .set(input)
+        .where(eq(articles.id, input.id))
+        .returning();
+      if (!updatedArticle) {
+        throw new TRPCError({
+          message: "記事を更新することに失敗しました",
+          code: "BAD_REQUEST",
+        });
+      }
+      return updatedArticle;
+    }),
 });
