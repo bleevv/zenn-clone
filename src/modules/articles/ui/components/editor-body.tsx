@@ -1,20 +1,20 @@
 "use client";
 
+import { useAtom, useSetAtom } from "jotai";
 import { PenIcon, PlayIcon } from "lucide-react";
 import { Suspense, useEffect } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { useAtom, useSetAtom } from "jotai";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { trpc } from "@/trpc/client";
-import { 
-  titleAtom, 
-  contentAtom, 
-  previewModeAtom, 
-  updateTitleAtom, 
+import {
+  contentAtom,
+  initializeArticleAtom,
+  previewModeAtom,
+  titleAtom,
   updateContentAtom,
-  initializeArticleAtom 
+  updateTitleAtom,
 } from "@/modules/articles/lib/state";
+import { trpc } from "@/trpc/client";
 import Markdown from "./markdown";
 
 export const EditorBody = ({ articleId }: { articleId: string }) => {
@@ -28,13 +28,16 @@ export const EditorBody = ({ articleId }: { articleId: string }) => {
 };
 
 const EditorBodySuspense = ({ articleId }: { articleId: string }) => {
-  const [article] = trpc.articles.getOne.useSuspenseQuery({ id: articleId });
-  
+  const [article] = trpc.articles.getOne.useSuspenseQuery({
+    id: articleId,
+    editMode: true,
+  });
+
   // Jotai atoms
   const [title] = useAtom(titleAtom);
   const [content] = useAtom(contentAtom);
   const [previewMode, setPreviewMode] = useAtom(previewModeAtom);
-  
+
   // Action atoms
   const updateTitle = useSetAtom(updateTitleAtom);
   const updateContent = useSetAtom(updateContentAtom);
@@ -46,7 +49,7 @@ const EditorBodySuspense = ({ articleId }: { articleId: string }) => {
       id: articleId,
       title: article.title ?? undefined,
       content: article.content ?? undefined,
-      published: article.published ?? undefined
+      published: article.published ?? undefined,
     });
   }, [article, articleId, initializeArticle]);
 

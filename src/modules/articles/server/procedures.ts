@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, getTableColumns } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import { articles, user } from "@/db/schema";
@@ -26,13 +26,23 @@ export const articlesRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
+        editMode: z.boolean().optional().default(false),
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const article = await db
-        .select()
+        .select({
+          ...getTableColumns(articles),
+          creator: user,
+        })
         .from(articles)
-        .where(eq(articles.id, input.id));
+        .innerJoin(user, eq(articles.userId, user.id))
+        .where(
+          and(
+            eq(articles.id, input.id),
+            input.editMode ? eq(articles.userId, ctx.user.id) : undefined
+          )
+        );
       if (!article) {
         throw new TRPCError({
           message: "記事が見つかりません",

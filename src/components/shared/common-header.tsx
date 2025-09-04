@@ -8,7 +8,7 @@ import { NotificationButton } from "./notification-button";
 
 export const CommonHeader = () => {
   return (
-    <header className="bg-white">
+    <header className="sticky top-0 z-100 bg-white">
       <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-10">
         <Link className="flex items-center justify-center gap-2" href="/">
           <Book />

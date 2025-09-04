@@ -7,7 +7,7 @@ export default async function EditArticlePage({
   params: Promise<{ articleId: string }>;
 }) {
   const { articleId } = await params;
-  void trpc.articles.getOne.prefetch({ id: articleId });
+  void trpc.articles.getOne.prefetch({ id: articleId, editMode: true });
   return (
     <HydrateClient>
       <EditArticleView articleId={articleId} />
