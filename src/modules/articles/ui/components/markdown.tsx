@@ -1,15 +1,15 @@
 "use client";
-import "github-markdown-css";
 import markdownHtml from "zenn-markdown-html";
 import "zenn-content-css";
 import { useEffect, useMemo } from "react";
+import { cn } from "@/lib/utils";
 
 type Props = {
   content: string;
   className?: string;
 };
 
-export default function Markdown({ content }: Props) {
+export default function Markdown({ content, className }: Props) {
   const html = useMemo(
     () =>
       markdownHtml(content, {
@@ -21,6 +21,11 @@ export default function Markdown({ content }: Props) {
   useEffect(() => {
     import("zenn-embed-elements");
   }, []);
-  // biome-ignore lint/security/noDangerouslySetInnerHtml: <zenn-markdown-html need dangerouslySetInnerHTML>
-  return <div className="znc" dangerouslySetInnerHTML={{ __html: html }} />;
+  return (
+    <div
+      className={cn("znc", className)}
+      // biome-ignore lint/security/noDangerouslySetInnerHtml: <zenn-markdown-html need dangerouslySetInnerHTML>
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
 }
